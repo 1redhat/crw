@@ -1,0 +1,8 @@
+----
+displayName: greeting-service                                        
+description: This is a custom stack for the greeting service
+tags: ["Java", "maven"]
+icon: https://www.eclipse.org/che/images/logo-eclipseche.svg 
+globalMemoryLimit: 3072Mi
+links:
+    self: /devfiles/05_greeting-service/devfile.yaml

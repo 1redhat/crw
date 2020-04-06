@@ -1,0 +1,62 @@
+Get the name of the OpenShift pod that hosts the devfile registry container. To do this, filter the app=che-devfile-registry label:
+
+----
+DEVFILE_REG_POD=$(oc get -o custom-columns=NAME:.metadata.name \
+  --no-headers -l component=devfile-registry pod)
+----
+
+oc get -o custom-columns=NAME:.metadata.name --no-headers -l component=devfile-registry pod
+
+Create the new devfile directory in the devfile registry container, if it does not exist.
+
+----
+STACK="greeting-service"
+oc exec $\{DEVFILE_REG_POD} -i -t -- \
+  mkdir -p /var/www/html/devfiles/$\{STACK}
+----
+
+STACK="greeting-service"
+oc exec ${DEVFILE_REG_POD} -i -t -- \
+  mkdir -p /var/www/html/devfiles/${STACK}
+
+
+Copy the devfile.yaml file and the meta.yaml file to the container.
+----
+LOCAL_META="$(PWD)/meta.yaml"
+LOCAL_DEVFILE="$(PWD)/devfile.yaml"
+oc cp "$\{LOCAL_META}" \
+  $\{DEVFILE_REG_POD}:/var/www/html/devfiles/$\{STACK}
+oc cp "$\{LOCAL_DEVFILE}" \
+  $\{DEVFILE_REG_POD}:/var/www/html/devfiles/$\{STACK}
+----
+
+oc cp ${LOCAL_META} \
+  ${DEVFILE_REG_POD}:/var/www/html/devfiles/${STACK}
+oc cp ${LOCAL_DEVFILE} \
+  ${DEVFILE_REG_POD}:/var/www/html/devfiles/${STACK}  
+
+Update the index.json file of the registry.
+
+----
+oc exec $\{DEVFILE_REG_POD} -i -t -- \
+  /var/www/html/index.sh > /var/www/html/devfiles/index.json
+----
+oc exec ${DEVFILE_REG_POD} -i -t -- \
+  /var/www/html/index.sh > /var/www/html/devfiles/index.json
+
+
+  {
+    "displayName": "greeting-service",
+    "description": "greeting-service",
+    "tags": [
+      "Java",
+      "OpenJDK",
+      "Maven",
+      "Spring Boot"
+    ],
+    "icon": "https://raw.githubusercontent.com/redhat-developer/codeready-workspaces/master/dependencies/che-devfile-registry/images/type-spring-boot.svg?sanitize=true",
+    "globalMemoryLimit": "3072Mi",
+    "links": {
+      "self": "/devfiles/greeting-service/devfile.yaml"
+    }
+  },
